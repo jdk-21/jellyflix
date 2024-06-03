@@ -35,7 +35,7 @@ dependencies:
   hooks_riverpod: ^2.4.9
   flutter_hooks: ^0.20.3
   riverpod_annotation: ^2.3.3
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^9.2.2
   permission_handler: ^11.1.0
   filter_list:
     git: https://github.com/TheAlphamerc/filterlist.git

@@ -41,230 +41,230 @@ jobs:
           name: gitversion
           path: version.txt
 
-  build_web:
-    name: Create Web Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
+  # build_web:
+  #   name: Create Web Build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out Git repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: "12.x"
-          cache: gradle
+  #     - name: Setup java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: "12.x"
+  #         cache: gradle
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         cache: true
     
-      - name: Get dependencies
-        run: flutter pub get
+  #     - name: Get dependencies
+  #       run: flutter pub get
 
-      - name: Start Web Release Build
-        run: flutter build web --release
+  #     - name: Start Web Release Build
+  #       run: flutter build web --release
     
-      - name: Upload Web Build Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-release
-          path: ./build/web
+  #     - name: Upload Web Build Files
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: web-release
+  #         path: ./build/web
 
-  deploy_web:
-    name: Deploy Web Build
-    needs: build_web
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download Web Release
-      uses: actions/download-artifact@v4
-      with:
-        name: web-release
+  # deploy_web:
+  #   name: Deploy Web Build
+  #   needs: build_web
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Download Web Release
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: web-release
 
-    - name: Deploy to gh-pages
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
-        cname: jellyflix.kiejon.com
+  #   - name: Deploy to gh-pages
+  #     uses: peaceiris/actions-gh-pages@v4
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./
+  #       cname: jellyflix.kiejon.com
 
-  build_android:
-    name: Build Android
-    needs: [version]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repo
-        uses: actions/checkout@v4
+  # build_android:
+  #   name: Build Android
+  #   needs: [version]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Clone Repo
+  #       uses: actions/checkout@v4
 
-      - name: Get version.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: gitversion
+  #     - name: Get version.txt
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: gitversion
 
-      - name: Create new file without newline char from version.txt
-        run: tr -d '\n' < version.txt > version1.txt
+  #     - name: Create new file without newline char from version.txt
+  #       run: tr -d '\n' < version.txt > version1.txt
 
-      - name: Read version
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: version1.txt
+  #     - name: Read version
+  #       id: version
+  #       uses: juliangruber/read-file-action@v1
+  #       with:
+  #         path: version1.txt
 
-      - name: Update version in YAML
-        run: sed -i 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
+  #     - name: Update version in YAML
+  #       run: sed -i 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '12.x'
-          cache: gradle
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '12.x'
+  #         cache: gradle
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         cache: true
 
-      - name: Run Pub get
-        run: flutter pub get
+  #     - name: Run Pub get
+  #       run: flutter pub get
 
-      - name: Download Android keystore
-        id: android_keystore
-        uses: timheuer/base64-to-file@v1
-        with:
-          fileName: ${{ secrets.ANDROID_KEY_ALIAS }}
-          encodedString: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  #     - name: Download Android keystore
+  #       id: android_keystore
+  #       uses: timheuer/base64-to-file@v1
+  #       with:
+  #         fileName: ${{ secrets.ANDROID_KEY_ALIAS }}
+  #         encodedString: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
-      - name: Create key.properties
-        run: |
-          echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
-          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+  #     - name: Create key.properties
+  #       run: |
+  #         echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
+  #         echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+  #         echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+  #         echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
 
-      - name: Build apk
-        run: flutter build apk --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+  #     - name: Build apk
+  #       run: flutter build apk --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
 
-      - name: Build Android App Bundle
-        run: flutter build appbundle --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+  #     - name: Build Android App Bundle
+  #       run: flutter build appbundle --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
 
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/jellyflix.apk
+  #     - name: Rename APK
+  #       run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/jellyflix.apk
 
-      - name: Upload apk
-        uses: actions/upload-artifact@v4
-        with:
-          name: jellyflix-apk
-          path: build/app/outputs/flutter-apk/jellyflix.apk
+  #     - name: Upload apk
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: jellyflix-apk
+  #         path: build/app/outputs/flutter-apk/jellyflix.apk
 
-      - name: Upload app bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: jellyflix-appbundle
-          path: build/app/outputs/bundle/release/app-release.aab
+  #     - name: Upload app bundle
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: jellyflix-appbundle
+  #         path: build/app/outputs/bundle/release/app-release.aab
 
-  build_ios:
-    needs: [version]
-    name: Build iOS
-    runs-on: macos-14
-    steps:
-    - name: Checkout the code
-      uses: actions/checkout@v4
+  # build_ios:
+  #   needs: [version]
+  #   name: Build iOS
+  #   runs-on: macos-14
+  #   steps:
+  #   - name: Checkout the code
+  #     uses: actions/checkout@v4
 
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '2.6.10'
-        bundler-cache: true
-        working-directory: 'ios'
+  #   - name: Setup Ruby
+  #     uses: ruby/setup-ruby@v1
+  #     with:
+  #       ruby-version: '2.6.10'
+  #       bundler-cache: true
+  #       working-directory: 'ios'
 
-    - name: Get version.txt
-      uses: actions/download-artifact@v4
-      with:
-        name: gitversion
+  #   - name: Get version.txt
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: gitversion
 
-    - name: Create new file without newline char from version.txt
-      run: tr -d '\n' < version.txt > version1.txt
+  #   - name: Create new file without newline char from version.txt
+  #     run: tr -d '\n' < version.txt > version1.txt
 
-    - name: Read version
-      id: version
-      uses: juliangruber/read-file-action@v1
-      with:
-        path: version1.txt
+  #   - name: Read version
+  #     id: version
+  #     uses: juliangruber/read-file-action@v1
+  #     with:
+  #       path: version1.txt
 
-    - name: Update version in YAML
-      run: sed -i '' 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
+  #   - name: Update version in YAML
+  #     run: sed -i '' 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
 
-    - name: Create release notes
-      uses: johnyherangi/create-release-notes@v1
-      if: ${{ github.ref == 'refs/heads/stable' }}
-      id: create-release-notes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Create release notes
+  #     uses: johnyherangi/create-release-notes@v1
+  #     if: ${{ github.ref == 'refs/heads/stable' }}
+  #     id: create-release-notes
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-        cache: true
+  #   - name: Setup Flutter
+  #     uses: subosito/flutter-action@v2
+  #     with:
+  #       channel: 'stable'
+  #       cache: true
 
-    - name: Install packages
-      run: flutter pub get
+  #   - name: Install packages
+  #     run: flutter pub get
 
-    - name: Install Cocoapods
-      working-directory: ios
-      run: pod install
+  #   - name: Install Cocoapods
+  #     working-directory: ios
+  #     run: pod install
 
-    - name: Install Fastlane
-      working-directory: ios
-      run: bundle install
+  #   - name: Install Fastlane
+  #     working-directory: ios
+  #     run: bundle install
 
-    - name: Setup SSH Keys and known_hosts for Fastlane Match
-      env:
-        PRIVATE_KEY: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
-      run: |
-        mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
-        echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts ~/.ssh/id_rsa
-        eval $(ssh-agent) && ssh-add ~/.ssh/id_rsa
+  #   - name: Setup SSH Keys and known_hosts for Fastlane Match
+  #     env:
+  #       PRIVATE_KEY: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+  #     run: |
+  #       mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
+  #       echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
+  #       ssh-keyscan github.com >> ~/.ssh/known_hosts
+  #       chmod 600 ~/.ssh/known_hosts ~/.ssh/id_rsa
+  #       eval $(ssh-agent) && ssh-add ~/.ssh/id_rsa
 
-    - name: Save base64 encoded p8 cert
-      working-directory: ios
-      run: echo ${{ secrets.APPSTORE_CONNECT_API_KEY }} | base64 --decode > AuthKey_${{ secrets.APPSTORE_CONNECT_KEY_ID }}.p8
+  #   - name: Save base64 encoded p8 cert
+  #     working-directory: ios
+  #     run: echo ${{ secrets.APPSTORE_CONNECT_API_KEY }} | base64 --decode > AuthKey_${{ secrets.APPSTORE_CONNECT_KEY_ID }}.p8
 
-    - name: Add Credentials / Keys, Build and Upload to TestFlight
-      working-directory: ios
-      env:
-        TEAM_ID: ${{ secrets.TEAM_ID }}
-        ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
-        MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+  #   - name: Add Credentials / Keys, Build and Upload to TestFlight
+  #     working-directory: ios
+  #     env:
+  #       TEAM_ID: ${{ secrets.TEAM_ID }}
+  #       ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+  #       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+  #       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         
-        APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPSTORE_CONNECT_KEY_ID }}
-        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
-        APP_STORE_CONNECT_FILE_PATH: "./AuthKey_${{ secrets.APPSTORE_CONNECT_KEY_ID }}.p8"
+  #       APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPSTORE_CONNECT_KEY_ID }}
+  #       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
+  #       APP_STORE_CONNECT_FILE_PATH: "./AuthKey_${{ secrets.APPSTORE_CONNECT_KEY_ID }}.p8"
 
-        RELEASE_NOTES: ${{ steps.create-release-notes.outputs.release-notes }}
+  #       RELEASE_NOTES: ${{ steps.create-release-notes.outputs.release-notes }}
         
-      run: |
-        sed -i "" "s/TEAM_ID/$TEAM_ID/g" ./Runner/ExportOptions.plist
-        sed -i "" "s/SENSITIVE_REPLACE_ME/$TEAM_ID/g" ./Runner.xcodeproj/project.pbxproj
+  #     run: |
+  #       sed -i "" "s/TEAM_ID/$TEAM_ID/g" ./Runner/ExportOptions.plist
+  #       sed -i "" "s/SENSITIVE_REPLACE_ME/$TEAM_ID/g" ./Runner.xcodeproj/project.pbxproj
 
-        bundle exec fastlane setup
-        bundle exec fastlane beta
+  #       bundle exec fastlane setup
+  #       bundle exec fastlane beta
       
 
-    # Collect the file and upload as artifact         
-    - name: collect ipa artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: jellyflix-ipa
-        # Path to the release files
-        path: ios/*.ipa
+  #   # Collect the file and upload as artifact         
+  #   - name: collect ipa artifacts
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: jellyflix-ipa
+  #       # Path to the release files
+  #       path: ios/*.ipa
         
   build_macos:
     name: Build macOS
@@ -385,225 +385,225 @@ jobs:
           name: jellyflix-macos
           path: build/macos/Build/Products/Release/jellyflix.dmg
 
-  build_linux:
-    name: Build Linux
-    needs: [version]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repo
-        uses: actions/checkout@v4
+  # build_linux:
+  #   name: Build Linux
+  #   needs: [version]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Clone Repo
+  #       uses: actions/checkout@v4
 
-      - name: Get version.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: gitversion
-      - name: Create new file without newline char from version.txt
-        run: tr -d '\n' < version.txt > version1.txt
-      - name: Read version
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: version1.txt
-      - name: Update version in YAML
-        run: sed -i 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
+  #     - name: Get version.txt
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: gitversion
+  #     - name: Create new file without newline char from version.txt
+  #       run: tr -d '\n' < version.txt > version1.txt
+  #     - name: Read version
+  #       id: version
+  #       uses: juliangruber/read-file-action@v1
+  #       with:
+  #         path: version1.txt
+  #     - name: Update version in YAML
+  #       run: sed -i 's/00.00.00+0/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' pubspec.yaml
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '12.x'
-          cache: gradle
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '12.x'
+  #         cache: gradle
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         cache: true
       
-      - name: Setup build tools
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev clang libmpv-dev mpv libsecret-1-dev libjsoncpp-dev
-          flutter doctor
+  #     - name: Setup build tools
+  #       run: |
+  #         sudo apt-get update -y
+  #         sudo apt-get install -y ninja-build libgtk-3-dev clang libmpv-dev mpv libsecret-1-dev libjsoncpp-dev
+  #         flutter doctor
 
-      - name: Run Pub get
-        run: flutter pub get
+  #     - name: Run Pub get
+  #       run: flutter pub get
 
-      - name: Build Linux
-        run: flutter build linux --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+  #     - name: Build Linux
+  #       run: flutter build linux --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
 
-      - name: Install zip
-        uses: montudor/action-zip@v1
+  #     - name: Install zip
+  #       uses: montudor/action-zip@v1
       
-      - name: Zip Linux
-        run: zip -qq -r jellyflix-linux.zip .
-        working-directory: build/linux/x64/release/bundle
+  #     - name: Zip Linux
+  #       run: zip -qq -r jellyflix-linux.zip .
+  #       working-directory: build/linux/x64/release/bundle
 
-      - name: Upload Linux
-        uses: actions/upload-artifact@v4
-        with:
-          name: jellyflix-linux
-          path: build/linux/x64/release/bundle/jellyflix-linux.zip
+  #     - name: Upload Linux
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: jellyflix-linux
+  #         path: build/linux/x64/release/bundle/jellyflix-linux.zip
 
-  build_windows:
-    name: Build Windows
-    needs: [version]
-    runs-on: windows-latest
-    steps:
-      - name: Clone Repo
-        uses: actions/checkout@v4
+  # build_windows:
+  #   name: Build Windows
+  #   needs: [version]
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Clone Repo
+  #       uses: actions/checkout@v4
       
-      - name: Git:Enable long paths
-        run: git config --system core.longpaths true
+  #     - name: Git:Enable long paths
+  #       run: git config --system core.longpaths true
 
-      - name: Get version.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: gitversion
+  #     - name: Get version.txt
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: gitversion
 
-      - name: Create new file without newline char from version.txt
-        run: (Get-Content version.txt) -join '' | Set-Content version1.txt
-        shell: pwsh
+  #     - name: Create new file without newline char from version.txt
+  #       run: (Get-Content version.txt) -join '' | Set-Content version1.txt
+  #       shell: pwsh
 
-      - name: Read version
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: version1.txt
+  #     - name: Read version
+  #       id: version
+  #       uses: juliangruber/read-file-action@v1
+  #       with:
+  #         path: version1.txt
 
-      - name: Update version in YAML
-        run: (Get-Content pubspec.yaml) -replace '00.00.00+0', "${{ steps.version.outputs.content }}+${{ github.run_number }}" | Set-Content pubspec.yaml
-        shell: pwsh
+  #     - name: Update version in YAML
+  #       run: (Get-Content pubspec.yaml) -replace '00.00.00+0', "${{ steps.version.outputs.content }}+${{ github.run_number }}" | Set-Content pubspec.yaml
+  #       shell: pwsh
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '12.x'
-          cache: gradle
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '12.x'
+  #         cache: gradle
       
-      # fixes #278 https://github.com/subosito/flutter-action/issues/278
-      - name: Export pub environment variable on Windows
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "PUB_CACHE=$LOCALAPPDATA\\Pub\\Cache" >> $GITHUB_ENV
-          fi
-        shell: bash
+  #     # fixes #278 https://github.com/subosito/flutter-action/issues/278
+  #     - name: Export pub environment variable on Windows
+  #       run: |
+  #         if [ "$RUNNER_OS" == "Windows" ]; then
+  #           echo "PUB_CACHE=$LOCALAPPDATA\\Pub\\Cache" >> $GITHUB_ENV
+  #         fi
+  #       shell: bash
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         cache: true
 
-      - name: Run Pub get
-        run: flutter pub get
+  #     - name: Run Pub get
+  #       run: flutter pub get
 
-      - name: Build Windows
-        run: flutter build windows --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+  #     - name: Build Windows
+  #       run: flutter build windows --release --dart-define=ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
 
-      - name: Zip Windows
-        run: Compress-Archive -Path ./build/windows/x64/runner/Release/* -Destination jellyflix-windows.zip
+  #     - name: Zip Windows
+  #       run: Compress-Archive -Path ./build/windows/x64/runner/Release/* -Destination jellyflix-windows.zip
 
-      - name: Upload Windows
-        uses: actions/upload-artifact@v4
-        with:
-          name: jellyflix-windows
-          path: jellyflix-windows.zip
+  #     - name: Upload Windows
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: jellyflix-windows
+  #         path: jellyflix-windows.zip
 
-  create_release:
-    name: Create Release
-    needs: [build_android, build_linux, build_windows, build_macos]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repo
-        uses: actions/checkout@v4
+  # create_release:
+  #   name: Create Release
+  #   needs: [build_android, build_linux, build_windows, build_macos]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Clone Repo
+  #       uses: actions/checkout@v4
 
-      - name: Get version.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: gitversion
+  #     - name: Get version.txt
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: gitversion
 
-      - name: Create new file without newline char from version.txt
-        run: tr -d '\n' < version.txt > version1.txt
+  #     - name: Create new file without newline char from version.txt
+  #       run: tr -d '\n' < version.txt > version1.txt
 
-      - name: Read version
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: version1.txt
+  #     - name: Read version
+  #       id: version
+  #       uses: juliangruber/read-file-action@v1
+  #       with:
+  #         path: version1.txt
 
-      - name: Download Artifacts APK
-        uses: actions/download-artifact@v4
-        with:
-          name: jellyflix-apk
-          path: jellyflix-apk
+  #     - name: Download Artifacts APK
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: jellyflix-apk
+  #         path: jellyflix-apk
 
-      - name: Download Artifacts Linux
-        uses: actions/download-artifact@v4
-        with:
-          name: jellyflix-linux
-          path: jellyflix-linux
+  #     - name: Download Artifacts Linux
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: jellyflix-linux
+  #         path: jellyflix-linux
 
-      - name: Download Artifacts Windows
-        uses: actions/download-artifact@v4
-        with:
-          name: jellyflix-windows
-          path: jellyflix-windows
+  #     - name: Download Artifacts Windows
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: jellyflix-windows
+  #         path: jellyflix-windows
 
-      - name: Download Artifacts Mac
-        uses: actions/download-artifact@v4
-        with:
-          name: jellyflix-macos
-          path: jellyflix-macos
+  #     - name: Download Artifacts Mac
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: jellyflix-macos
+  #         path: jellyflix-macos
     
-      - name: Create release notes
-        uses: johnyherangi/create-release-notes@v1
-        if: ${{ github.ref == 'refs/heads/stable' }}
-        id: create-release-notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Create release notes
+  #       uses: johnyherangi/create-release-notes@v1
+  #       if: ${{ github.ref == 'refs/heads/stable' }}
+  #       id: create-release-notes
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "jellyflix-apk/*.apk,jellyflix-linux/*,jellyflix-windows/*,jellyflix-macos/*"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.content }}
-          commit: ${{ github.sha }}
-          body: ${{ steps.create-release-notes.outputs.release-notes }}
-          prerelease: ${{ github.ref == 'refs/heads/preview' }}
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: ncipollo/release-action@v1
+  #       with:
+  #         artifacts: "jellyflix-apk/*.apk,jellyflix-linux/*,jellyflix-windows/*,jellyflix-macos/*"
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         tag: ${{ steps.version.outputs.content }}
+  #         commit: ${{ github.sha }}
+  #         body: ${{ steps.create-release-notes.outputs.release-notes }}
+  #         prerelease: ${{ github.ref == 'refs/heads/preview' }}
 
-  release-play-store:
-    name: Release app to play store
-    needs: [build_android]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
+  # release-play-store:
+  #   name: Release app to play store
+  #   needs: [build_android]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out Git repository
+  #       uses: actions/checkout@v4
 
-      - name: Get appbundle from artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: jellyflix-appbundle
+  #     - name: Get appbundle from artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: jellyflix-appbundle
 
-      - name: Release app to open testing track
-        if: ${{ github.ref == 'refs/heads/preview' }}
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
-          packageName: ${{ secrets.ANDROID_PACKAGE_NAME }}
-          releaseFiles: app-release.aab
-          track: beta
-          status: draft
+  #     - name: Release app to open testing track
+  #       if: ${{ github.ref == 'refs/heads/preview' }}
+  #       uses: r0adkll/upload-google-play@v1
+  #       with:
+  #         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+  #         packageName: ${{ secrets.ANDROID_PACKAGE_NAME }}
+  #         releaseFiles: app-release.aab
+  #         track: beta
+  #         status: draft
 
-      - name: Release app to production track
-        if: ${{ github.ref == 'refs/heads/stable' }}
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
-          packageName: ${{ secrets.ANDROID_PACKAGE_NAME }}
-          releaseFiles: app-release.aab
-          track: production
-          status: draft
+  #     - name: Release app to production track
+  #       if: ${{ github.ref == 'refs/heads/stable' }}
+  #       uses: r0adkll/upload-google-play@v1
+  #       with:
+  #         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+  #         packageName: ${{ secrets.ANDROID_PACKAGE_NAME }}
+  #         releaseFiles: app-release.aab
+  #         track: production
+  #         status: draft
